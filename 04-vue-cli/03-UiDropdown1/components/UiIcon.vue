@@ -47,7 +47,6 @@ export default {
   props: {
     icon: {
       type: String,
-      required: true,
       validator: (name) => Object.keys(icons).includes(name),
     },
   },

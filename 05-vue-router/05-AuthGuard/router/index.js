@@ -5,11 +5,13 @@ const router = createRouter({
   history: createWebHistory('/05-vue-router/05-AuthGuard'),
   routes: [
     {
+      name: 'Meetups',
       path: '/',
       alias: '/meetups',
       component: () => import('../views/PageMeetups.vue'),
     },
     {
+      name: 'Login',
       path: '/login',
       meta: {
         requireGuest: true,
@@ -17,6 +19,7 @@ const router = createRouter({
       component: () => import('../views/PageLogin.vue'),
     },
     {
+      name: 'Register',
       path: '/register',
       meta: {
         requireGuest: true,
@@ -24,6 +27,7 @@ const router = createRouter({
       component: () => import('../views/PageRegister.vue'),
     },
     {
+      name: 'Create',
       path: '/meetups/create',
       meta: {
         requireAuth: true,
@@ -31,6 +35,7 @@ const router = createRouter({
       component: () => import('../views/PageCreateMeetup.vue'),
     },
     {
+      name: 'Edit',
       path: '/meetups/:meetupId(\\d+)/edit',
       meta: {
         requireAuth: true,
@@ -39,5 +44,25 @@ const router = createRouter({
     },
   ],
 });
+
+function authGuard(to) {
+  // Гард принимает на вход следующий и предыдущий маршруты. Но нам нужен только следующий
+
+  // Если маршрут требует авторизации, а пользователь не авторизован - переходим на страницу авторизации
+  if (to.meta.requireAuth && !isAuthenticated()) {
+    // В query параметр from передаём путь запрашиваемой страницы
+    return { name: 'Login', query: { from: to.fullPath } };
+  }
+
+  // Если маршрут требует отсутствия авторизации, а пользователь авторизован - переходим на главную страницу
+  if (to.meta.requireGuest && isAuthenticated()) {
+    return { name: 'Meetups' };
+  }
+
+  // В остальных случаях разрешаем переход без ограничений
+  return true;
+}
+
+router.beforeEach(authGuard);
 
 export { router };

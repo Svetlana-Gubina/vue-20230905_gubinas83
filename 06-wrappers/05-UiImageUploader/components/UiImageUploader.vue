@@ -1,77 +1,130 @@
 <template>
   <div class="image-uploader">
-    <label :class="['image-uploader__preview', {'image-uploader__preview-loading': isLoading}]" :style='`--bg-url: url(${value})`'>
-      <span v-if="isLoading" class="image-uploader__text">'Загрузка...'</span>
-      <span v-else-if="!isLoading && value" class="image-uploader__text">Удалить изображение</span>
-      <span v-else class="image-uploader__text">Загрузить изображение</span>
-      <input ref="inputRef" type="file" accept="image/*" class="image-uploader__input" v-bind="$attrs" @change="inputChange($event)" @cancel="console.log('Cancelled')" @click="onCLick" />
+    <label
+      class="image-uploader__preview"
+      :class="{ 'image-uploader__preview-loading': state === $options.States.LOADING }"
+      :style="state !== $options.States.EMPTY && `--bg-url: url('${imageSrc}')`"
+    >
+      <span class="image-uploader__text">{{ stateText }}</span>
+      <input
+        ref="input"
+        type="file"
+        accept="image/*"
+        class="image-uploader__input"
+        v-bind="$attrs"
+        @change="handleFileSelect"
+        @click="handleClick"
+      />
     </label>
   </div>
 </template>
 
 <script>
+const States = {
+  EMPTY: 'EMPTY',
+  LOADING: 'LOADING',
+  FILLED: 'FILLED',
+};
+
 export default {
   name: 'UiImageUploader',
-
   inheritAttrs: false,
 
+  States,
+
   props: {
-    preview: {
-      type: String,
-      default: ''
-    },
     uploader: {
       type: Function,
-      default: () => {}
-    }
+    },
+
+    preview: {
+      type: String,
+    },
   },
 
-  emits: ['select', 'upload', 'error', 'remove'],
+  emits: ['upload', 'select', 'error', 'remove'],
 
   data() {
     return {
-      value: this.preview ?? null,
-      isLoading: false,
-    }
+      // Храним текущее состояние
+      // Начальное состояние зависит от того, передан ли preview
+      state: this.preview ? States.FILLED : States.EMPTY,
+      // Текущее изображение тоже храним локально
+      localPreview: null,
+    };
+  },
+
+  computed: {
+    stateText() {
+      return {
+        [States.EMPTY]: 'Загрузить изображение',
+        [States.LOADING]: 'Загрузка...',
+        [States.FILLED]: 'Удалить изображение',
+      }[this.state];
+    },
+
+    imageSrc() {
+      // Текущее изображение - либо уже выбранное локальное, либо изначальное превью
+      // Для удалённого изображения здесь будет ссылка на preview, но не будет выводиться
+      return this.localPreview ?? this.preview;
+    },
   },
 
   beforeUnmount() {
-      // Чистим созданный идентификатор на изображение компонента
-      if (this.value) {
-        URL.revokeObjectURL(this.value);
-      }
-    },
+    // Чистим созданный идентификатор на изображение компонента
+    if (this.localPreview) {
+      URL.revokeObjectURL(this.localPreview);
+    }
+  },
 
   methods: {
-    onCLick($event) {
-      if(this.isLoading) {
-        $event.preventDefault();
-      } else if(!this.isLoading && this.value) {
+    async handleFileSelect($event) {
+      // Достаём файл их события (инпута) и отдаём с событием родителю
+      const file = $event.target.files[0];
+      this.$emit('select', file);
+      // Создаём ссылку на текущий файл для отображения
+      this.localPreview = URL.createObjectURL(file);
+      // Если нет загрузчика, работа с файлом завершена
+      if (!this.uploader) {
+        this.state = States.FILLED;
+        return;
+      }
+      // Загружаем файл
+      return await this.upload(file);
+    },
+
+    async upload(file) {
+      this.state = States.LOADING;
+      try {
+        const result = await this.uploader(file);
+        this.$emit('upload', result);
+        this.state = States.FILLED;
+      } catch (error) {
+        this.$emit('error', error);
+        this.state = States.EMPTY;
+        // Не забываем сбросить файл в случае не успешной загрузки
+        // Иначе нельзя будет выбрать тот же файл
         this.removeFile();
+      }
+    },
+
+    handleClick($event) {
+      if (this.state === States.LOADING) {
+        // Игнорируем клик во время загрузки
+        $event.preventDefault();
+      } else if (this.state === States.FILLED) {
+        $event.preventDefault();
+        this.removeFile();
+        this.state = States.EMPTY;
         this.$emit('remove');
       }
+      // Когда ничего не выбрано, клик обрабатывается по умолчанию, открывая диалог выбора файла
     },
-    removeFile() {
-      this.$refs.inputRef.value = '';
-      this.value = null;
-    },
-    async inputChange($event) {
-      const image = URL.createObjectURL($event.target.files[0]);
-      this.value = image;
-      this.$emit('select', $event.target.files[0])
 
-      if(this.uploader) {
-        this.isLoading = true;
-        try {
-          const result = await this.uploader($event.target.files[0]);
-          this.$emit('upload', result)
-        } catch(error) {
-          this.$emit('error', error)
-          this.removeFile();
-        } finally {
-          this.isLoading = false;
-        }
-      }
+    removeFile() {
+      // Файл нельзя удалить нормальным Vue-way способом, нужно напрямую менять DOM
+      this.$refs.input.value = '';
+      this.localPreview = null;
     },
   },
 };

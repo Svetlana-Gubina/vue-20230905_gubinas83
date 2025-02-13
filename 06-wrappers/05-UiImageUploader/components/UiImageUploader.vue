@@ -1,8 +1,10 @@
 <template>
   <div class="image-uploader">
-    <label class="image-uploader__preview image-uploader__preview-loading" style="--bg-url: url('/link.jpeg')">
-      <span class="image-uploader__text">Загрузить изображение</span>
-      <input type="file" accept="image/*" class="image-uploader__input" />
+    <label :class="['image-uploader__preview', {'image-uploader__preview-loading': isLoading}]" :style='`--bg-url: url(${value})`'>
+      <span v-if="isLoading" class="image-uploader__text">'Загрузка...'</span>
+      <span v-else-if="!isLoading && value" class="image-uploader__text">Удалить изображение</span>
+      <span v-else class="image-uploader__text">Загрузить изображение</span>
+      <input ref="inputRef" type="file" accept="image/*" class="image-uploader__input" v-bind="$attrs" @change="inputChange($event)" @cancel="console.log('Cancelled')" @click="onCLick" />
     </label>
   </div>
 </template>
@@ -10,6 +12,68 @@
 <script>
 export default {
   name: 'UiImageUploader',
+
+  inheritAttrs: false,
+
+  props: {
+    preview: {
+      type: String,
+      default: ''
+    },
+    uploader: {
+      type: Function,
+      default: () => {}
+    }
+  },
+
+  emits: ['select', 'upload', 'error', 'remove'],
+
+  data() {
+    return {
+      value: this.preview ?? null,
+      isLoading: false,
+    }
+  },
+
+  beforeUnmount() {
+      // Чистим созданный идентификатор на изображение компонента
+      if (this.value) {
+        URL.revokeObjectURL(this.value);
+      }
+    },
+
+  methods: {
+    onCLick($event) {
+      if(this.isLoading) {
+        $event.preventDefault();
+      } else if(!this.isLoading && this.value) {
+        this.removeFile();
+        this.$emit('remove');
+      }
+    },
+    removeFile() {
+      this.$refs.inputRef.value = '';
+      this.value = null;
+    },
+    async inputChange($event) {
+      const image = URL.createObjectURL($event.target.files[0]);
+      this.value = image;
+      this.$emit('select', $event.target.files[0])
+
+      if(this.uploader) {
+        this.isLoading = true;
+        try {
+          const result = await this.uploader($event.target.files[0]);
+          this.$emit('upload', result)
+        } catch(error) {
+          this.$emit('error', error)
+          this.removeFile();
+        } finally {
+          this.isLoading = false;
+        }
+      }
+    },
+  },
 };
 </script>
 

@@ -1,37 +1,37 @@
 <template>
   <fieldset class="agenda-item-form">
-    <button type="button" class="agenda-item-form__remove-button">
+    <button type="button" class="agenda-item-form__remove-button" @click="$emit('remove')">
       <UiIcon icon="trash" />
     </button>
 
     <UiFormGroup>
-      <UiDropdown title="Тип" :options="$options.agendaItemTypeOptions" name="type" />
+      <UiDropdown title="Тип" :options="$options.agendaItemTypeOptions" name="type" v-model="localAgendaItem.type" />
     </UiFormGroup>
 
     <div class="agenda-item-form__row">
       <div class="agenda-item-form__col">
         <UiFormGroup label="Начало">
-          <UiInput type="time" placeholder="00:00" name="startsAt" />
+          <UiInput type="time" placeholder="00:00" name="startsAt" v-model="localAgendaItem.startsAt" />
         </UiFormGroup>
       </div>
       <div class="agenda-item-form__col">
         <UiFormGroup label="Окончание">
-          <UiInput type="time" placeholder="00:00" name="endsAt" />
+          <UiInput type="time" placeholder="00:00" name="endsAt" v-model="localAgendaItem.endsAt" />
         </UiFormGroup>
       </div>
     </div>
 
     <UiFormGroup label="Тема">
-      <UiInput name="title" />
+      <UiInput name="title" v-model="localAgendaItem.title" />
     </UiFormGroup>
     <UiFormGroup label="Докладчик">
-      <UiInput name="speaker" />
+      <UiInput name="speaker" v-model="localAgendaItem.speaker" />
     </UiFormGroup>
     <UiFormGroup label="Описание">
-      <UiInput multiline name="description" />
+      <UiInput multiline name="description" v-model="localAgendaItem.descrition" />
     </UiFormGroup>
     <UiFormGroup label="Язык">
-      <UiDropdown title="Язык" :options="$options.talkLanguageOptions" name="language" />
+      <UiDropdown title="Язык" :options="$options.talkLanguageOptions" name="language" v-model="localAgendaItem.language" />
     </UiFormGroup>
   </fieldset>
 </template>
@@ -89,6 +89,36 @@ export default {
       type: Object,
       required: true,
     },
+  },
+
+  data() {
+    return {
+      localAgendaItem: {...this.agendaItem},
+    };
+  },
+
+  emits: ['remove', 'update:agendaItem'],
+
+  watch: {
+    localAgendaItem: {
+      handler(newValue, oldValue) {
+        this.$emit('update:agendaItem', {...this.localAgendaItem})
+      },
+      deep: true
+    },
+
+    'localAgendaItem.startsAt': {
+      handler(newValue, oldValue) {
+        const [newHours, newMins] = newValue.split(':');
+        const [oldHours, oldMins] = oldValue.split(':');
+
+        const deltaHours = Number(newHours) - Number(oldHours);
+        const deltaMins = Number(newMins) - Number(oldMins);
+
+        const [hours, mins] = this.localAgendaItem.endsAt.split(':');
+        this.localAgendaItem.endsAt = `${Number(hours) + deltaHours}:${Number(mins) + deltaMins}`
+      },
+    }
   },
 };
 </script>

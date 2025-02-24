@@ -1,6 +1,10 @@
 <template>
   <main class="mini-messenger">
+<<<<<<< HEAD
     <ul class="messages" ref="el">
+=======
+    <ul ref="messages" class="messages">
+>>>>>>> 54a72e61ac4184db52c480c41d870218de1db49e
       <li v-for="message in messages" :key="message.id" class="message">
         {{ message.text }}
       </li>
@@ -36,13 +40,23 @@ export default {
   methods: {
     async handleSendSubmit() {
       this.send();
+<<<<<<< HEAD
       await nextTick();
+=======
+      // Ждём реакции на обновление данных (списка сообщений) и обновления DOM после рендеринга
+      await nextTick();
+      // Прокручиваем список сообщений
+>>>>>>> 54a72e61ac4184db52c480c41d870218de1db49e
       this.scrollMessagesToBottom();
     },
 
     scrollMessagesToBottom() {
       // Обращаемся через ref к DOM элементу для прокручивания
+<<<<<<< HEAD
       const messagesElement = this.$refs['el'];
+=======
+      const messagesElement = this.$refs['messages'];
+>>>>>>> 54a72e61ac4184db52c480c41d870218de1db49e
       messagesElement.scrollTop = messagesElement.scrollHeight - messagesElement.clientHeight;
     },
 

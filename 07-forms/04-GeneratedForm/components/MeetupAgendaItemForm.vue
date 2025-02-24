@@ -5,24 +5,24 @@
     </button>
 
     <UiFormGroup>
-      <UiDropdown title="Тип" :options="$options.agendaItemTypeOptions" name="type" v-model="localAgendaItem.type" />
+      <UiDropdown v-model="localAgendaItem.type" title="Тип" :options="$options.agendaItemTypeOptions" name="type" />
     </UiFormGroup>
 
     <div class="agenda-item-form__row">
       <div class="agenda-item-form__col">
         <UiFormGroup label="Начало">
-          <UiInput type="time" placeholder="00:00" name="startsAt" v-model="localAgendaItem.startsAt" />
+          <UiInput v-model="localAgendaItem.startsAt" type="time" placeholder="00:00" name="startsAt" />
         </UiFormGroup>
       </div>
       <div class="agenda-item-form__col">
         <UiFormGroup label="Окончание">
-          <UiInput type="time" placeholder="00:00" name="endsAt" v-model="localAgendaItem.endsAt" />
+          <UiInput v-model="localAgendaItem.endsAt" type="time" placeholder="00:00" name="endsAt" />
         </UiFormGroup>
       </div>
     </div>
 
-    <UiFormGroup v-for="(value, key) in $options.agendaItemFormSchemas[localAgendaItem.type]" :key="key" :label="value.label">
-      <component :is="value.component" v-model="localAgendaItem[key]" v-bind="value.props"></component>
+    <UiFormGroup v-for="(spec, field) in schema" :key="field" :label="spec.label">
+      <component :is="spec.component" v-model="localAgendaItem[field]" v-bind="spec.props" />
     </UiFormGroup>
   </fieldset>
 </template>
@@ -167,9 +167,18 @@ export default {
 
   data() {
     return {
-      localAgendaItem: {...this.agendaItem},
+      localAgendaItem: { ...this.agendaItem },
+    };
+  },
 
-    }
+  computed: {
+    startsAt() {
+      return this.localAgendaItem.startsAt;
+    },
+
+    schema() {
+      return agendaItemFormSchemas[this.localAgendaItem.type];
+    },
   },
 
   watch: {
@@ -178,6 +187,35 @@ export default {
       handler() {
         this.$emit('update:agendaItem', { ...this.localAgendaItem });
       },
+    },
+
+    startsAt(newValue, oldValue) {
+      // Если время не введено или введено не до конца, браузер вернёт пустую строку (при поддержке time)
+      // Но Safari не поддерживает input[type=time] :(
+      // Придётся проверять
+      if (!/([0-1]\d|2[0-3]):[0-5]\d/.test(newValue)) {
+        return;
+      }
+      // Разделяем время на часы и минуты и переводим в минуты
+      const timeToMinutes = (time) => {
+        const [h, m] = time.split(':').map((x) => parseInt(x, 10));
+        return h * 60 + m;
+      };
+      const newMinutes = timeToMinutes(newValue);
+      const oldMinutes = timeToMinutes(oldValue);
+      const oldEndsAtMinutes = timeToMinutes(this.localAgendaItem.endsAt);
+      // Считаем изменение времени в минутах
+      const deltaMinutes = newMinutes - oldMinutes;
+      // Считаем новое значение
+      const newEndsAtMinutes = (oldEndsAtMinutes + deltaMinutes + 24 * 60) % (24 * 60);
+      // Пересчитываем обратно в часы и минуты
+      const hours = Math.floor(newEndsAtMinutes / 60)
+        .toString()
+        .padStart(2, '0');
+      const minutes = Math.floor(newEndsAtMinutes % 60)
+        .toString()
+        .padStart(2, '0');
+      this.localAgendaItem.endsAt = `${hours}:${minutes}`;
     },
   },
 };

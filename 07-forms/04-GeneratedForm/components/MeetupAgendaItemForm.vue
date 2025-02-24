@@ -1,31 +1,28 @@
 <template>
   <fieldset class="agenda-item-form">
-    <button type="button" class="agenda-item-form__remove-button">
+    <button type="button" class="agenda-item-form__remove-button" @click="$emit('remove')">
       <UiIcon icon="trash" />
     </button>
 
     <UiFormGroup>
-      <UiDropdown title="Тип" :options="$options.agendaItemTypeOptions" name="type" />
+      <UiDropdown title="Тип" :options="$options.agendaItemTypeOptions" name="type" v-model="localAgendaItem.type" />
     </UiFormGroup>
 
     <div class="agenda-item-form__row">
       <div class="agenda-item-form__col">
         <UiFormGroup label="Начало">
-          <UiInput type="time" placeholder="00:00" name="startsAt" />
+          <UiInput type="time" placeholder="00:00" name="startsAt" v-model="localAgendaItem.startsAt" />
         </UiFormGroup>
       </div>
       <div class="agenda-item-form__col">
         <UiFormGroup label="Окончание">
-          <UiInput type="time" placeholder="00:00" name="endsAt" />
+          <UiInput type="time" placeholder="00:00" name="endsAt" v-model="localAgendaItem.endsAt" />
         </UiFormGroup>
       </div>
     </div>
 
-    <UiFormGroup label="Заголовок">
-      <UiInput name="title" />
-    </UiFormGroup>
-    <UiFormGroup label="Описание">
-      <UiInput multiline name="description" />
+    <UiFormGroup v-for="(value, key) in $options.agendaItemFormSchemas[localAgendaItem.type]" :key="key" :label="value.label">
+      <component :is="value.component" v-model="localAgendaItem[key]" v-bind="value.props"></component>
     </UiFormGroup>
   </fieldset>
 </template>
@@ -84,7 +81,7 @@ const talkLanguageOptions = [
 const commonAgendaItemFormSchema = {
   title: {
     label: 'Нестандартный текст (необязательно)',
-    component: 'ui-input',
+    component: 'UiInput',
     props: {
       name: 'title',
     },
@@ -98,21 +95,21 @@ const agendaItemFormSchemas = {
   talk: {
     title: {
       label: 'Тема',
-      component: 'ui-input',
+      component: 'UiInput',
       props: {
         name: 'title',
       },
     },
     speaker: {
       label: 'Докладчик',
-      component: 'ui-input',
+      component: 'UiInput',
       props: {
         name: 'speaker',
       },
     },
     description: {
       label: 'Описание',
-      component: 'ui-input',
+      component: 'UiInput',
       props: {
         multiline: true,
         name: 'description',
@@ -120,7 +117,7 @@ const agendaItemFormSchemas = {
     },
     language: {
       label: 'Язык',
-      component: 'ui-dropdown',
+      component: 'UiDropdown',
       props: {
         options: talkLanguageOptions,
         title: 'Язык',
@@ -135,14 +132,14 @@ const agendaItemFormSchemas = {
   other: {
     title: {
       label: 'Заголовок',
-      component: 'ui-input',
+      component: 'UiInput',
       props: {
         name: 'title',
       },
     },
     description: {
       label: 'Описание',
-      component: 'ui-input',
+      component: 'UiInput',
       props: {
         multiline: true,
         name: 'description',
@@ -163,6 +160,24 @@ export default {
     agendaItem: {
       type: Object,
       required: true,
+    },
+  },
+
+  emits: ['update:agendaItem', 'remove'],
+
+  data() {
+    return {
+      localAgendaItem: {...this.agendaItem},
+
+    }
+  },
+
+  watch: {
+    localAgendaItem: {
+      deep: true,
+      handler() {
+        this.$emit('update:agendaItem', { ...this.localAgendaItem });
+      },
     },
   },
 };

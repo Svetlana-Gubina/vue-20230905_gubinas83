@@ -1,4 +1,4 @@
-import { ref, watch, nextTick } from 'vue';
+import { ref, watch } from 'vue';
 import debounce from 'lodash/debounce';
 
 /**
@@ -24,7 +24,7 @@ export function debouncedRef(source, wait) {
   // Создаём новый ref с начальным значением
   const debounced = ref(source.value);
   // Создаём с помощью lodash.debounce функцию обновления значения с заданной задержкой
-  const debouncedWatchHandler = debounceFn((newValue) => {
+  const debouncedWatchHandler = debounce((newValue) => {
     debounced.value = newValue;
   }, wait);
   // Отслеживаем исходное значение и используем deounced функцию для обновления значения

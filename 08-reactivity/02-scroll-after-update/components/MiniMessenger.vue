@@ -14,6 +14,8 @@
 </template>
 
 <script>
+import { nextTick } from 'vue';
+
 let lastId = 0;
 
 export default {
@@ -32,8 +34,16 @@ export default {
   },
 
   methods: {
-    handleSendSubmit() {
+    async handleSendSubmit() {
       this.send();
+      await nextTick();
+      this.scrollMessagesToBottom();
+    },
+
+    scrollMessagesToBottom() {
+      // Обращаемся через ref к DOM элементу для прокручивания
+      const messagesElement = this.$refs['el'];
+      messagesElement.scrollTop = messagesElement.scrollHeight - messagesElement.clientHeight;
     },
 
     send() {
@@ -42,20 +52,6 @@ export default {
         text: this.newMessage,
       });
       this.newMessage = '';
-    },
-  },
-
-  watch: {
-    messages: {
-      deep: true,
-      handler() {
-        this.$refs.el.scrollTo({
-          top: 300,
-          left: 0,
-          behavior: "smooth",
-        });
-
-      },
     },
   },
 };

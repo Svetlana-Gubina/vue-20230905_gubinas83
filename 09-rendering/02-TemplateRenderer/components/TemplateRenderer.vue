@@ -1,6 +1,10 @@
 <script>
+<<<<<<< HEAD
 import { defineComponent, h } from 'vue';
 import { compile } from 'vue';
+=======
+import { compile, defineComponent, h } from 'vue';
+>>>>>>> 021fe5c96b4a1e220f56b2fac41dddf94487796b
 
 export default {
   name: 'TemplateRenderer',
@@ -30,15 +34,15 @@ export default {
     componentFromTemplate() {
       return defineComponent({
         name: 'TemplateRendererInternal',
-        props: ['bindings'],
         components: this.components,
+        props: ['bindings'],
         render: this.renderFunction,
-      })
-    }
+      });
+    },
   },
 
   render() {
-    return h(this.componentFromTemplate, {bindings: this.bindings})
-  }
+    return h(this.componentFromTemplate, { bindings: this.bindings });
+  },
 };
 </script>

@@ -12,21 +12,6 @@ import UiInput from './UiInput.vue';
 export default {
   name: 'UiInputDate',
 
-  props: {
-    type: {
-      type: String,
-      default: "date"
-    },
-    modelValue: {
-      type: Number,
-      default: 0
-    },
-    step: {
-      type: Number,
-      default: 0
-    },
-  },
-
   computed: {
     modelValueProxy: {
       get() {

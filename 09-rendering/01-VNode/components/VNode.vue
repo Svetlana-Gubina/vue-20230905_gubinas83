@@ -1,3 +1,4 @@
+
 <script>
 import { isVNode } from 'vue';
 
@@ -7,9 +8,13 @@ export default {
   props: {
     vnode: {
       type: [Object, Array],
-      require: true,
+      required: true,
       validator: (value) => (Array.isArray(value) ? value.every((item) => isVNode(item)) : isVNode(value)),
     },
+  },
+
+  render() {
+    return Array.isArray(this.vnode) ? this.vnode.map((v) => v) : this.vnode;
   },
 };
 </script>

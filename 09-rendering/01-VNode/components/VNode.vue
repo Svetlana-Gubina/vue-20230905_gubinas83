@@ -14,7 +14,7 @@ export default {
   },
 
   render() {
-    return Array.isArray(this.vnode) ? this.vnode.map((v) => v) : this.vnode;
+    return this.vnode;
   },
 };
 </script>

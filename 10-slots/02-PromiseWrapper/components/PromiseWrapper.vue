@@ -1,16 +1,16 @@
 <template>
-  <div v-if="promiseState === 'pending'">
-    <slot name="pending"></slot>
-  </div>
-  <div v-if="promiseState === 'rejected'">
-    <slot name="rejected" :error="promise.error"></slot>
-  </div>
-  <div v-if="promiseState === 'fulfilled'">
-    <slot name="fulfilled" :result="promise.result"></slot>
-  </div>
+  <slot v-if="isFulfilled" name="fulfilled" :result="result" />
+  <slot v-else-if="isRejected" name="rejected" :error="error" />
+  <slot v-else name="pending" />
 </template>
 
 <script>
+const PromiseStates = {
+  PENDING: 'pending',
+  FULFILLED: 'fulfilled',
+  REJECTED: 'rejected',
+};
+
 export default {
   name: 'PromiseWrapper',
 
@@ -21,14 +21,42 @@ export default {
     },
   },
 
-  computed: {
-    promiseState() {
-      return this.promise.state;
-    }
+  data() {
+    return {
+      state: PromiseStates.PENDING,
+      result: undefined,
+      error: undefined,
+    };
   },
 
-  mounted(){
-    console.log(this.promise)
+  computed: {
+    isFulfilled() {
+      return this.state === PromiseStates.FULFILLED;
+    },
+
+    isRejected() {
+      return this.state === PromiseStates.REJECTED;
+    },
+  },
+
+  watch: {
+    promise: {
+      immediate: true,
+      handler() {
+        this.state = PromiseStates.PENDING;
+        this.result = undefined;
+        this.error = undefined;
+        this.promise
+          .then((result) => {
+            this.result = result;
+            this.state = PromiseStates.FULFILLED;
+          })
+          .catch((error) => {
+            this.error = error;
+            this.state = PromiseStates.REJECTED;
+          });
+      },
+    },
   },
 };
 </script>

@@ -1,9 +1,9 @@
 <template>
-  <UiCalendarView v-slot="{timestamp}">
-    <UiCalendarEvent v-for="meetup in meetupsByDate[timestamp]" :key="meetup.id" tag="a" :href="`/meetups/${meetup.id}`">
-    {{ meetup.title }}
-  </UiCalendarEvent>
-  </UiCalendarView>e
+  <UiCalendarView v-slot="{ timestamp }">
+    <UiCalendarEvent v-for="meetup in meetupsByDate[timestamp]" :key="meetup.id" tag="a" :href="`/meetups/${meetup.id}`"
+      >{{ meetup.title }}
+    </UiCalendarEvent>
+  </UiCalendarView>
 </template>
 
 <script>
@@ -26,18 +26,18 @@ export default {
   },
 
   computed: {
-  meetupsByDate() {
-    const result = {};
-    for (const meetup of this.meetups) {
-      if (!result[meetup.date]) {
-        result[meetup.date] = [meetup];
-      } else {
-        result[meetup.date].push(meetup);
+    meetupsByDate() {
+      const result = {};
+      for (const meetup of this.meetups) {
+        if (!result[meetup.date]) {
+          result[meetup.date] = [meetup];
+        } else {
+          result[meetup.date].push(meetup);
+        }
       }
-    }
-    return result;
+      return result;
+    },
   },
-},
 };
 </script>
 

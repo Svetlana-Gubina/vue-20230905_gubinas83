@@ -2,14 +2,6 @@
   <div class="calendar-view">
     <div class="calendar-view__controls">
       <div class="calendar-view__controls-inner">
-<<<<<<< HEAD
-        <button @click.stop="previousMonth" class="calendar-view__control-left" type="button" aria-label="Previous month"></button>
-        <div class="calendar-view__date">{{ date.toLocaleDateString("en-EN", {
-          month: 'long',
-          year: 'numeric',
-        }) }} </div>
-        <button @click.stop="nextMonth" class="calendar-view__control-right" type="button" aria-label="Next month"></button>
-=======
         <button
           class="calendar-view__control-left"
           type="button"
@@ -23,32 +15,10 @@
           aria-label="Next month"
           @click.stop="setNextMonth"
         ></button>
->>>>>>> 7abebd12c05a3c79a93937837e1582a7c4f5e4ea
       </div>
     </div>
 
     <div class="calendar-view__grid">
-<<<<<<< HEAD
-      <div v-for="prevDay in previousDays"  :key="prevDay" class="calendar-view__cell calendar-view__cell_inactive" tabindex="0">
-        <div class="calendar-view__cell-day">{{ prevDay }}</div>
-        <div class="calendar-view__cell-content"></div>
-      </div>
-
-
-      <div v-for="currentDay in currentMonthDays" :key="currentDay" class="calendar-view__cell" tabindex="0">
-        <div class="calendar-view__cell-day">{{ currentDay }}</div>
-        <div class="calendar-view__cell-content">
-          <a v-for="meetup in meetups.filter((meetup) => new Date(meetup.date).getDate() === currentDay && new Date(meetup.date).getMonth() === date.getMonth() && new Date(meetup.date).getFullYear() === date.getFullYear())" :key="meetup.id" :href="`/meetups/${meetup.id}`" class="calendar-event">{{ meetup.title }}</a>
-
-        </div>
-      </div>
-
-
-      <div v-for="nextDay in nextDays" :key="nextDay" class="calendar-view__cell calendar-view__cell_inactive" tabindex="0">
-        <div class="calendar-view__cell-day">{{ nextDay }}</div>
-        <div class="calendar-view__cell-content"></div>
-      </div>
-=======
       <div
         v-for="cell in calendarCells"
         :key="cell.timestamp"
@@ -69,7 +39,6 @@
           </a>
         </div>
       </div>
->>>>>>> 7abebd12c05a3c79a93937837e1582a7c4f5e4ea
     </div>
   </div>
 </template>
@@ -86,72 +55,6 @@ export default {
       required: true,
     },
   },
-<<<<<<< HEAD
-  data() {
-    return {
-      date: new Date(),
-      monthes: [
-        'Январь',
-        'Февраль',
-        'Март',
-        'Апрель',
-        'Май',
-        'Июнь',
-        'Июль',
-        'Август',
-        'Сентябрь',
-        'Ноябрь',
-        'Декабрь',
-      ],
-    }
-  },
-  methods: {
-    previousMonth() {
-      this.date = new Date(this.date.setMonth(this.date.getMonth() - 1));
-    },
-    nextMonth() {
-      this.date = new Date(this.date.setMonth(this.date.getMonth() + 1));
-    },
-  },
-  computed: {
-    previousDays() {
-      let arr = [];
-      let firstWeekDay = new Date(this.date.getFullYear(), this.date.getMonth(), 1).getDay() - 1;
-      if(firstWeekDay === -1) {
-        firstWeekDay = 6;
-      }
-
-      let previousMonthLastDate = new Date(this.date.getFullYear(), this.date.getMonth() , 0).getDate();
-      let count = firstWeekDay;
-      for(let i = previousMonthLastDate; i > previousMonthLastDate - count; i--) {
-        arr.push(i);
-      }
-
-      return arr.reverse();
-    },
-    nextDays() {
-      let arr = [];
-      let lastWeekDay = new Date(this.date.getFullYear(), this.date.getMonth() + 1, 0).getDay() - 1;
-      if(lastWeekDay === -1) {
-        lastWeekDay = 6;
-      }
-      let count = 6 - lastWeekDay + 1;
-      for(let i = 1; i < count; i++) {
-        arr.push(i);
-      }
-      return arr;
-    },
-    currentMonthDays() {
-      let arr = [];
-      let count = new Date(this.date.getFullYear(), this.date.getMonth() + 1, 0).getDate();
-      for(let i = 1; i <= count; i++) {
-        arr.push(i);
-      }
-      return arr;
-    }
-  }
-
-=======
 
   data() {
     return {
@@ -210,7 +113,6 @@ export default {
       this.currentDate = addMonths(this.currentDate, 1);
     },
   },
->>>>>>> 7abebd12c05a3c79a93937837e1582a7c4f5e4ea
 };
 </script>
 

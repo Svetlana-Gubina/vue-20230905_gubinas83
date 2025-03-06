@@ -1,10 +1,14 @@
 <template>
-  <button class="button-group__button button-group__button_active" type="button" aria-selected="false">Button</button>
+  <button :class="['button-group__button', {'button-group__button_active': value === VALUE.value}]" type="button" aria-selected="false" @click="setValue(value)">
+    <slot/>
+  </button>
 </template>
 
 <script>
 export default {
   name: 'UiButtonGroupItem',
+
+  inject:['VALUE', 'setValue'],
 
   props: {
     value: {
